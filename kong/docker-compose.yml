@@ -1,0 +1,87 @@
+services:
+
+  kong-database:
+    image: postgres:16
+    container_name: kong-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: kong
+      POSTGRES_DB: kong
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kong -d kong"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - kong-db-data:/var/lib/postgresql/data
+    networks:
+      - kong-net
+
+  kong-migrations:
+    image: kong:3.9
+    container_name: kong-migrations
+    depends_on:
+      kong-database:
+        condition: service_healthy
+    command: kong migrations bootstrap
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PG_DATABASE: kong
+    networks:
+      - kong-net
+    restart: "no"
+
+  kong:
+    image: kong:3.9
+    container_name: kong
+    restart: unless-stopped
+    depends_on:
+      kong-database:
+        condition: service_healthy
+      kong-migrations:
+        condition: service_completed_successfully
+
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PG_DATABASE: kong
+
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001, 0.0.0.0:8444 ssl"
+      KONG_ADMIN_GUI_LISTEN: "0.0.0.0:8002, 0.0.0.0:8445 ssl"
+      KONG_ADMIN_GUI_URL: http://localhost:8002
+      KONG_ADMIN_GUI_API_URL: http://localhost:8001
+
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+    ports:
+      - "8000:8000"                # HTTP proxy
+      - "8443:8443"                # HTTPS proxy
+      - "127.0.0.1:8001:8001"      # Admin API
+      - "127.0.0.1:8444:8444"      # Admin API HTTPS
+      - "127.0.0.1:8002:8002"      # Kong Manager
+      - "127.0.0.1:8445:8445"      # Kong Manager HTTPS
+
+    networks:
+      - kong-net
+
+volumes:
+  kong-db-data:
+
+networks:
+  kong-net:
+    driver: bridge
