@@ -17,7 +17,7 @@ services:
     
     
 
-# docker compose -f <file-name> up -docker
+# docker compose -f <file-name> up -d
 # docker compose -f <file-name> down 
 
 # docker exec nginx_web_service nginx -s start
