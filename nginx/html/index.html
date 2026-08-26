@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Nginx</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0f172a;
+        --card-bg: #1e293b;
+        --accent: #ffffff;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at top, white, var(--bg));
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        color: var(--text);
+      }
+
+      .card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 3rem 3.5rem;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        max-width: 480px;
+      }
+
+      .logo {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+      }
+
+      h1 {
+        margin: 0 0 0.75rem;
+        font-size: 1.75rem;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .badge {
+        display: inline-block;
+        margin-top: 1.5rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.15);
+        color: var(--accent);
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+      }
+    </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🚀</div>
+    <h1>Nginx is up and running!</h1>
+    <p>This page is being served from a Docker container via Nginx.</p>
+    <span class="badge">Status: Online</span>
+  </div>
+</body>
+</html>
