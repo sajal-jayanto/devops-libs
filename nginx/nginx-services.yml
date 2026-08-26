@@ -16,3 +16,11 @@ services:
       - ./html:/usr/share/nginx/html:ro
     
     
+
+# docker compose -f <file-name> up -docker
+# docker compose -f <file-name> down 
+
+# docker exec nginx_web_service nginx -s start
+# docker exec nginx_web_service nginx -s reload
+# docker exec nginx_web_service nginx -s down
+
