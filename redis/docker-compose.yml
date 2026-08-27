@@ -1,0 +1,163 @@
+services:
+  redis-master:
+    image: redis:8-alpine
+    container_name: redis-master
+    hostname: redis-master
+    volumes:
+      - redis-master-data:/data
+      - ./conf/master.conf:/etc/redis/redis.conf.tpl:ro
+    command:
+      - sh
+      - -c
+      - |
+        if [ ! -f /data/redis.conf ]; then
+          cp /etc/redis/redis.conf.tpl /data/redis.conf
+          echo "replica-announce-ip $$HOSTNAME" >> /data/redis.conf
+        fi
+        exec redis-server /data/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 2s
+      retries: 15
+    networks: [redis-network]
+    restart: unless-stopped
+
+  redis-replica:
+    image: redis:8-alpine
+    container_name: redis-replica
+    hostname: redis-replica
+    volumes:
+      - redis-replica-data:/data
+      - ./conf/replica.conf:/etc/redis/redis.conf.tpl:ro
+    command:
+      - sh
+      - -c
+      - |
+        if [ ! -f /data/redis.conf ]; then
+          cp /etc/redis/redis.conf.tpl /data/redis.conf
+          echo "replica-announce-ip $$HOSTNAME" >> /data/redis.conf
+        fi
+        exec redis-server /data/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 2s
+      retries: 15
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    networks: [redis-network]
+    restart: unless-stopped
+
+  redis-replica-2:
+    image: redis:8-alpine
+    container_name: redis-replica-2
+    hostname: redis-replica-2
+    volumes:
+      - redis-replica-2-data:/data
+      - ./conf/replica.conf:/etc/redis/redis.conf.tpl:ro
+    command:
+      - sh
+      - -c
+      - |
+        if [ ! -f /data/redis.conf ]; then
+          cp /etc/redis/redis.conf.tpl /data/redis.conf
+          echo "replica-announce-ip $$HOSTNAME" >> /data/redis.conf
+        fi
+        exec redis-server /data/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 2s
+      retries: 15
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    networks: [redis-network]
+    restart: unless-stopped
+
+
+  sentinel-1:
+    image: redis:8-alpine
+    container_name: redis-sentinel-1
+    hostname: sentinel-1
+    volumes:
+      - sentinel-1-data:/data
+      - ./sentinel/sentinel.conf:/etc/redis/sentinel.conf.tpl:ro
+    command: &sentinel-cmd
+      - sh
+      - -c
+      - |
+        if [ ! -f /data/sentinel.conf ]; then
+          cp /etc/redis/sentinel.conf.tpl /data/sentinel.conf
+          echo "sentinel announce-ip $$HOSTNAME" >> /data/sentinel.conf
+          echo "sentinel announce-port 26379" >> /data/sentinel.conf
+        fi
+        exec redis-server /data/sentinel.conf --sentinel
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+    depends_on:
+      redis-master:
+        condition: service_healthy
+      redis-replica:
+        condition: service_healthy
+    networks: [redis-network]
+    restart: unless-stopped
+
+  sentinel-2:
+    image: redis:8-alpine
+    container_name: redis-sentinel-2
+    hostname: sentinel-2
+    volumes:
+      - sentinel-2-data:/data
+      - ./sentinel/sentinel.conf:/etc/redis/sentinel.conf.tpl:ro
+    command: *sentinel-cmd
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+    depends_on:
+      redis-master:
+        condition: service_healthy
+      redis-replica:
+        condition: service_healthy
+    networks: [redis-network]
+    restart: unless-stopped
+
+  sentinel-3:
+    image: redis:8-alpine
+    container_name: redis-sentinel-3
+    hostname: sentinel-3
+    volumes:
+      - sentinel-3-data:/data
+      - ./sentinel/sentinel.conf:/etc/redis/sentinel.conf.tpl:ro
+    command: *sentinel-cmd
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+    depends_on:
+      redis-master:
+        condition: service_healthy
+      redis-replica:
+        condition: service_healthy
+    networks: [redis-network]
+    restart: unless-stopped
+
+networks:
+  redis-network:
+    driver: bridge
+
+volumes:
+  redis-master-data:
+  redis-replica-data:
+  redis-replica-2-data:
+  sentinel-1-data:
+  sentinel-2-data:
+  sentinel-3-data:
