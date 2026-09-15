@@ -1,0 +1,21 @@
+{
+  "name": "postgres-cdc",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "debezium",
+    "database.password": "debezium",
+    "database.dbname": "appdb",
+    "topic.prefix": "appdb",
+    "plugin.name": "pgoutput",
+    "publication.name": "dbz_publication",
+    "publication.autocreate.mode": "filtered",
+    "slot.name": "debezium_slot",
+    "schema.include.list": "public",
+    "table.include.list": "public.users,public.orders",
+    "snapshot.mode": "initial",
+    "include.schema.changes": "false",
+    "tombstones.on.delete": "false"
+  }
+}
