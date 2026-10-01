@@ -1,1 +1,2 @@
 nginx/ssl/*.pem
+aws/s3/node_modules
